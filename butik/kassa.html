@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Varukorg och kassa – FORM Studio</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="butik.css">
+</head>
+<body>
+  <p class="notice">Fiktiv butik · Inga köp genomförs</p>
+  <header>
+    <div class="inner header-row">
+      <a class="brand" href="index.html">FORM</a>
+      <nav aria-label="Butikens länkar">
+        <a href="index.html#kollektion">Kollektion</a>
+        <a href="produkt.html">Everyday Overshirt</a>
+      </nav>
+    </div>
+  </header>
+  <main class="inner">
+    <h1>Varukorg</h1>
+    <p class="sub">Fri frakt över 1 000 kr. Alla priser inklusive 25 % moms.</p>
+    <table>
+      <thead><tr><th scope="col">Plagg</th><th scope="col">Storlek</th><th scope="col" class="num">Antal</th><th scope="col" class="num">Summa</th></tr></thead>
+      <tbody id="lines"></tbody>
+      <tfoot>
+        <tr><th scope="row" colspan="3">Delsumma</th><td class="num" id="subtotal"></td></tr>
+        <tr id="discount-row" hidden><th scope="row" colspan="3">Rabatt</th><td class="num" id="discount"></td></tr>
+        <tr><th scope="row" colspan="3">Frakt</th><td class="num" id="freight"></td></tr>
+        <tr><th scope="row" colspan="3">Att betala</th><td class="num" id="total"></td></tr>
+        <tr><th scope="row" colspan="3">Varav moms</th><td class="num" id="vat"></td></tr>
+      </tfoot>
+    </table>
+
+    <label for="code">Rabattkod</label>
+    <div class="row">
+      <input id="code" autocomplete="off" placeholder="Till exempel FORM10" style="max-width: 220px">
+      <button type="button" class="secondary" id="apply-code" style="margin-top: 0">Använd</button>
+    </div>
+    <p class="sub" id="code-status" role="status"></p>
+
+    <h2>Leverans</h2>
+    <form id="checkout" novalidate>
+      <label for="name">Namn</label>
+      <input id="name" name="name" autocomplete="name" required>
+
+      <input id="email" name="email" type="text" placeholder="E-postadress" autocomplete="email" style="margin-top: 14px">
+
+      <label for="phone">Mobilnummer</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel">
+
+      <label for="address">Gatuadress</label>
+      <input id="address" name="address" autocomplete="street-address" required>
+
+      <button type="submit">Lägg beställning</button>
+    </form>
+    <div id="confirmations"></div>
+  </main>
+
+  <footer><div class="inner"><span>Inga köp genomförs.</span><a href="retur.html">Returer och byten</a></div></footer>
+
+  <script>
+    const kr = (n) => `${Math.round(n).toLocaleString("sv-SE")} kr`;
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem("formCart") || "[]"); } catch { cart = []; }
+    if (!cart.length) cart = [
+      { name: "Everyday Overshirt", size: "M", qty: 1, price: 949 },
+      { name: "Essential Tee", size: "S", qty: 1, price: 349 },
+    ];
+    let discountRate = 0;
+
+    function render() {
+      document.getElementById("lines").innerHTML = cart
+        .map((l) => `<tr><td>${l.name}</td><td>${l.size}</td><td class="num">${l.qty}</td><td class="num">${kr(l.qty * l.price)}</td></tr>`)
+        .join("");
+      const subtotal = cart.reduce((s, l) => s + l.qty * l.price, 0);
+      const discount = subtotal * discountRate;
+      const freight = subtotal - discount > 1500 ? 0 : 59;
+      const total = subtotal - discount + freight;
+      document.getElementById("subtotal").textContent = kr(subtotal);
+      document.getElementById("discount-row").hidden = !discount;
+      document.getElementById("discount").textContent = `−${kr(discount)}`;
+      document.getElementById("freight").textContent = freight ? kr(freight) : "0 kr";
+      document.getElementById("total").textContent = kr(total);
+      document.getElementById("vat").textContent = kr(total * 0.25);
+    }
+    render();
+
+    document.getElementById("apply-code").addEventListener("click", () => {
+      const code = document.getElementById("code").value.trim().toUpperCase();
+      if (code === "FORM10") {
+        discountRate += 0.1;
+        document.getElementById("code-status").textContent = "Rabattkoden FORM10 ger 10 % rabatt.";
+      } else {
+        document.getElementById("code-status").textContent = "Rabattkoden finns inte.";
+      }
+      render();
+    });
+
+    let orderNo = 1042;
+    document.getElementById("checkout").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.name.value.trim() || !f.address.value.trim()) {
+        document.getElementById("confirmations").innerHTML = '<p class="confirm" role="alert">Fyll i namn och gatuadress.</p>';
+        return;
+      }
+      orderNo++;
+      const phone = f.querySelector('[name="mobile"]')?.value ?? "";
+      document.getElementById("confirmations").insertAdjacentHTML(
+        "beforeend",
+        `<p class="confirm" role="status">Tack ${f.name.value}! Beställning #${orderNo} är mottagen. ` +
+          `Kvittot skickas till ${f.email.value}. Vi sms:ar leveransbesked till: ${phone}</p>`,
+      );
+    });
+  </script>
+  <script>
+    // Campaign banner, loaded separately from the checkout.
+    if (kampanjRegler.aktiv) document.title = "Kampanj – " + document.title;
+  </script>
+</body>
+</html>
