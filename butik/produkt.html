@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Everyday Overshirt – FORM Studio</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="butik.css">
+  <style>
+    .freight { color: #d4d6d4; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <p class="notice">Fiktiv butik · Inga köp genomförs</p>
+  <header>
+    <div class="inner header-row">
+      <a class="brand" href="index.html">FORM</a>
+      <nav aria-label="Butikens länkar">
+        <a href="index.html#kollektion">Kollektion</a>
+        <a href="kassa.html">Varukorg</a>
+      </nav>
+    </div>
+  </header>
+  <main class="inner">
+    <div class="grid">
+      <img id="product-image" src="images/overshirt.jpg" width="502" height="1024" alt="Skogsgrön overshirt med två bröstfickor">
+      <div>
+        <h1 id="product-name">Everyday Overshirt</h1>
+        <p class="sub" id="product-sub">Skogsgrön · Avslappnad passform</p>
+        <p class="price"><span id="product-price">899</span> kr</p>
+        <p class="freight">Fri frakt över 1 000 kr · Fri retur i 30 dagar</p>
+
+        <label for="size">Storlek</label>
+        <select id="size">
+          <option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option>
+        </select>
+        <button type="button" class="secondary" id="open-sizes">Storleksguide</button>
+
+        <label for="qty">Antal</label>
+        <input id="qty" type="number" value="1" min="1" max="10">
+
+        <div class="row">
+          <button type="button" id="add">Lägg i varukorgen</button>
+          <button type="button" class="secondary" id="favourite">Spara som favorit ♡</button>
+        </div>
+        <p id="added" class="sub" role="status"></p>
+      </div>
+    </div>
+
+    <h2>Matchas med</h2>
+    <div class="match">
+      <img src="images/halsduk.jpg" width="120" height="150" alt="Grå halsduk i ull">
+      <img src="images/t-shirt.jpg" width="120" height="150">
+    </div>
+  </main>
+
+  <div class="dialog-backdrop" id="sizes">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizes-title">
+      <h2 id="sizes-title">Storleksguide</h2>
+      <p>Mellan två storlekar? Välj den större för en avslappnad passform. Hela tabellen finns på <a href="index.html#storlekar">startsidan</a>.</p>
+      <button type="button" id="close-sizes">Stäng</button>
+    </div>
+  </div>
+
+  <footer><div class="inner"><span>Bilder, produkter och priser är exempel.</span><a href="retur.html">Returer och byten</a></div></footer>
+
+  <script>
+    const PRODUCTS = {
+      overshirt: { name: "Everyday Overshirt", sub: "Skogsgrön · Avslappnad passform", price: 899, cartPrice: 949, img: "images/overshirt.jpg", alt: "Skogsgrön overshirt med två bröstfickor" },
+      tee: { name: "Essential Tee", sub: "Vit · Rak passform", price: 349, cartPrice: 349, img: "images/t-shirt.jpg", alt: "Vit t-shirt med rund hals och korta ärmar" },
+      denim: { name: "Straight Denim", sub: "Tvättad svart · Raka ben", price: 1099, cartPrice: 1099, img: "images/jeans.jpg", alt: "Mörka jeans med raka ben" },
+    };
+    const key = location.hash.slice(1) in PRODUCTS ? location.hash.slice(1) : "overshirt";
+    const p = PRODUCTS[key];
+    document.title = `${p.name} – FORM Studio`;
+    document.getElementById("product-name").textContent = p.name;
+    document.getElementById("product-sub").textContent = p.sub;
+    document.getElementById("product-price").textContent = p.price.toLocaleString("sv-SE");
+    const img = document.getElementById("product-image");
+    img.src = p.img;
+    img.alt = p.alt;
+
+    document.getElementById("add").addEventListener("click", () => {
+      const qty = Number(document.getElementById("qty").value);
+      const size = document.getElementById("size").value;
+      let cart = [];
+      try { cart = JSON.parse(localStorage.getItem("formCart") || "[]"); } catch { cart = []; }
+      cart.push({ name: p.name, size, qty, price: p.cartPrice });
+      try { localStorage.setItem("formCart", JSON.stringify(cart)); } catch { /* private window */ }
+      document.getElementById("added").textContent = `${qty} st ${p.name} (${size}) ligger i varukorgen.`;
+    });
+
+    const dialog = document.getElementById("sizes");
+    document.getElementById("open-sizes").addEventListener("click", () => {
+      dialog.classList.add("open");
+      document.getElementById("close-sizes").focus();
+    });
+    document.getElementById("close-sizes").addEventListener("click", () => {
+      dialog.classList.remove("open");
+      document.getElementById("open-sizes").focus();
+    });
+  </script>
+</body>
+</html>
